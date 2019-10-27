@@ -1,24 +1,54 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import React from 'react';
+import { IonRow, IonCol, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton } from '@ionic/react';
+import React, { useState, useEffect } from 'react';
+
+import Grid from '../Components/Grid';
+import Card from '../Components/Card/Card';
+import CardDisplay from '../Components/Card/CardDisplay';
 
 const Home: React.FC = () => {
+  const [username, setUsername] = useState("");
+  const [user, setUser] = useState("");
+  const [cards, setCards] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      fetch(`https://api.github.com/users/${user}/repos`)
+      .then(d => d.json())
+      .then(d => { console.log(d);
+        return d.map(repoInfo => new Card(
+          repoInfo.name,
+          repoInfo.description || "",
+          repoInfo.language,
+          "",
+          repoInfo.html_url,
+          repoInfo.stargazers_count
+        ));
+      })
+      .then(d => setCards(d))
+    }
+  }, [user]);
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Ionic Blank</IonTitle>
+          <IonTitle>Grabhub</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
-        The world is your oyster.
-        <p>
-          If you get lost, the{' '}
-          <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/">
-            docs
-          </a>{' '}
-          will be your guide.
-        </p>
-      </IonContent>
+      <Grid>
+        <IonRow>
+          <div>
+            <IonInput clearInput={true} placeholder="github username" onIonChange={e => setUsername(e.detail.value)} />
+            <IonButton shape="round" expand="block" onClick={() => setUser(username)}>Load</IonButton>
+          </div>
+        </IonRow>
+        <IonRow>
+          <IonCol>
+            {cards.map(card => CardDisplay(card))}
+          </IonCol>
+        </IonRow>
+      </Grid>
+          
     </IonPage>
   );
 };
